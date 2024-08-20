@@ -8,7 +8,7 @@ const Page = () => {
   useEffect(() => {
     const socket = io('ws://localhost:3002');
     // Additional socket.io logic goes here
-
+    console.log(connected)
     // Update the connection status when the socket connects or disconnects
     socket.on('connect', () => {
       setConnected(true);

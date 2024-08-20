@@ -8,6 +8,7 @@ const initialUserState = {
     
 };
 
+
 const useUserStore = create((set) => ({
   user: initialUserState,
   setUser: (user) => set({ user }),

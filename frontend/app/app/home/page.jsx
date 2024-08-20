@@ -12,6 +12,10 @@ const Home = () => {
     router.push('./lobby');
   }
 
+  const handleJoinRoom = () => {
+    router.push('./lobby/join');
+  }
+
 
   return (
     <main className='h-screen w-screen flex flex-col justify-center items-center gap-10'>
@@ -21,7 +25,7 @@ const Home = () => {
         <div className='w-full flex justify-center'>
             <div className='w-2/4 flex justify-evenly'>
                 <button onClick={handleCreateRoom}>Create Room</button>
-                <button>Join Room</button>
+                <button onClick={handleJoinRoom}>Join Room</button>
             </div>
         </div>
     </main>

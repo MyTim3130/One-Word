@@ -20,28 +20,55 @@ io.on("connection", (socket) => {
   console.log("A user connected");
 
     // Handle createRoom event
+ 
     socket.on("createRoom", (data) => {
-        console.log("createRoom event received:", data);
-        let code = Math.floor(1000 + Math.random() * 9000);
-        while (games.find((game) => game.code === code)) {
-            code = Math.floor(1000 + Math.random() * 9000);
+      const game = {
+        id: Math.floor(1000 + Math.random() * 9000).toString(),
+        players: [{id: socket.id, name: data.playerName, host: true}],
+        words: [],
+        settings: {
+          time: 10,
+          maxWords: 15,
         }
-        const game = { code, players: [{name:data.playerName, id:v4(), socket, host: true, words:[]}] };
-        games.push(game)
-        socket.emit("roomCreated", {code, player:game.players[0]} );
+      };
+      games.push(game);
+      socket.join(game.id);
+      socket.emit("roomCreated", {player: game.players[0], id: game.id});
+    });
+
+  // Handle joinRoom event
+  socket.on("joinRoom", (data) => {
+    const game = games.find((game) => game.id === data.gameCode);
+    if (game) {
+      game.players.push({id: socket.id, name: data.playerName, host: false});
+      socket.join(game.id);
+      socket.emit("roomJoined", {player: game.players[game.players.length - 1], id: game.id, players: game.players, settings: game.settings});
+      io.to(game.id).emit("updatePlayers", {players: game.players});
+
     }
-);
-  
-    
+  });
+
+    //Handle updateSettings event
+    socket.on("updateSettings", (data) => {
+      const game = games.find((game) => game.players.some((player) => player.id === socket.id));
+      if (game) {
+        game.settings = data.settings;
+        io.to(game.id).emit("updateSettings", {settings: game.settings});
+      }
+    });
 
   // Handle disconnection
   socket.on("disconnect", () => {
     console.log("A user disconnected");
+    const game = games.find((game) => game.players.some((player) => player.id === socket.id));
+    if (game) {
+      game.players = game.players.filter((player) => player.id !== socket.id);
+      io.to(game.id).emit("updatePlayers", {players: game.players});
+    }
+
   });
 });
 
 // Start the server
-const port = process.env.PORT || 3001;
-server.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+
+console.log("Server listening on port 3002");
