@@ -33,11 +33,10 @@ const LobbyName = () => {
     };
 
   return (
-    <main>
-      <h1>Name</h1>
-      
-      <input type="text" onChange={handleChange} />
-      <button onClick={handleSubmit}>Submit</button>
+    <main className="flex flex-col items-center pt-20 gap-10">
+      <h1 className="text-3xl text-[#081C15]">Create</h1>      
+      <input type="text" onChange={handleChange} placeholder="Name..."  className="px-5 py-2 w-2/6 h-14 rounded-3xl text-xl bg-[#95D5B2] text-[#081C15] placeholder:text-[#081C15] focus:outline-none focus:scale-[1.01] transition-all" />
+      <button onClick={handleSubmit} className='text-xl px-10 py-2 bg-[#95D5B2] rounded-xl hover:scale-90 transition-all'>Submit</button>
     </main>
   );
 };

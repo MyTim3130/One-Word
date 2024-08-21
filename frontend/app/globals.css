@@ -3,3 +3,7 @@
 @tailwind utilities;
 
 
+body{
+    font-family: 'Roboto', sans-serif;
+    background-color: #40916C;
+}
