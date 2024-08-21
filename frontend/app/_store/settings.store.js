@@ -2,7 +2,7 @@ import { create } from "zustand";
 const initialSettingsState = {
   time: 10,
   maxWords: 15,
-
+  
     
 };
 

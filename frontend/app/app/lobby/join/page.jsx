@@ -35,7 +35,7 @@ const Join = () => {
   };
 
   return (
-    <main className="w-screen h-screen flex flex-col pt-20 gap-10 items-center">
+    <main className="w-screen h-[80vh] flex flex-col pt-20 gap-10 items-center justify-center">
       <h1 className="text-3xl text-[#081C15]">Join</h1>
       <div className="flex flex-col w-full">
         <div className="w-full h-full flex justify-center">

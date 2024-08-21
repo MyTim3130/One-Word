@@ -24,12 +24,13 @@ io.on("connection", (socket) => {
     socket.on("createRoom", (data) => {
       const game = {
         id: Math.floor(1000 + Math.random() * 9000).toString(),
-        players: [{id: socket.id, name: data.playerName, host: true}],
+        players: [{id: socket.id, name: data.playerName, host: true, words: []}],
         words: [],
         settings: {
           time: 10,
           maxWords: 15,
-        }
+        },
+        currentPlayer: 0,
       };
       games.push(game);
       socket.join(game.id);
@@ -40,7 +41,7 @@ io.on("connection", (socket) => {
   socket.on("joinRoom", (data) => {
     const game = games.find((game) => game.id === data.gameCode);
     if (game) {
-      game.players.push({id: socket.id, name: data.playerName, host: false});
+      game.players.push({id: socket.id, name: data.playerName, host: false, words: []});
       socket.join(game.id);
       socket.emit("roomJoined", {player: game.players[game.players.length - 1], id: game.id, players: game.players, settings: game.settings});
       io.to(game.id).emit("updatePlayers", {players: game.players});
@@ -56,6 +57,29 @@ io.on("connection", (socket) => {
         io.to(game.id).emit("updateSettings", {settings: game.settings});
       }
     });
+
+    // Handle startGame event
+    socket.on("startGame", (data) => {
+      const game = games.find((game) => game.id === data.lobbyCode);
+      if (game) {
+        // Perform any necessary game initialization or logic here
+        // Redirect all players in the room to a new page
+        io.to(game.id).emit("redirect", { url: "/app/game/" + game.id, currentPlayer: game.players[game.currentPlayer].id });
+
+      }
+    });
+
+
+  // Handle sendWord event
+  socket.on("sendWord", (data) => {
+    const game = games.find((game) => game.players.some((player) => player.id === socket.id));
+    if (game) {
+      game.words.push(data.word);
+      game.players[game.currentPlayer].words.push(data.word);
+      game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
+      io.to(game.id).emit("updateWords", {words: game.words, currentPlayer: game.players[game.currentPlayer].id});
+    }
+  });
 
   // Handle disconnection
   socket.on("disconnect", () => {
