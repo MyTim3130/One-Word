@@ -77,7 +77,13 @@ io.on("connection", (socket) => {
       game.words.push(data.word);
       game.players[game.currentPlayer].words.push(data.word);
       game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
-      io.to(game.id).emit("updateWords", {words: game.words, currentPlayer: game.players[game.currentPlayer].id});
+      io.to(game.id).emit("updateWords", { words: game.words, currentPlayer: game.players[game.currentPlayer].id });
+      if (data.word.includes(".")) {
+        game.currentPlayer = null;
+        io.to(game.id).emit("updateWords", { words: game.words, currentPlayer: game.currentPlayer });
+        io.to(game.id).emit("redirect", { url: "/voting" });
+
+      }
     }
   });
 
