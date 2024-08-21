@@ -15,42 +15,41 @@ const Game = () => {
   const [words, setWords] = useState([]);
   const [timer, setTimer] = useState(settings.time || 5); // Use settings.time or default to 5
   const [inputValue, setInputValue] = useState("");
-  const [progressWidth, setProgressWidth] = useState("100%");
 
   const roomCode = window.location.pathname.split("/")[3];
 
   const router = useRouter();
 
+
+
   useEffect(() => {
-    const timerInterval = setInterval(() => {
-      setTimer((prevTimer) => {
-        if (prevTimer === 1) {
-          handleSendWord(); // Automatically send the word when timer hits 0
-          return settings.time || 5; // Reset timer to settings.time or 5
-        } else {
-          return prevTimer - 1;
-        }
-      });
+    
+    setTimer(settings.time || 5); 
+    const indicator = document.getElementById("progress");
+    indicator.style.removeProperty("animation");
+    void indicator.offsetWidth;
+    indicator.style.animation = `progress ${settings.time || 5}s linear infinite`;
 
-      setProgressWidth((prevWidth) => {
-        const newWidth = ((timer - 1) / (settings.time || 5)) * 100;
-        return `${newWidth}%`;
-      });
+
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1)
     }, 1000);
+    return () => clearInterval(interval);
+}, [currentPlayer]);
 
-    return () => {
-      clearInterval(timerInterval);
-    };
-  }, [settings.time, timer]);
+  useEffect(() => {
+    if (timer === 0 && currentPlayer === user.id) {
+      handleSendWord();
+    }
+  }, [timer]);
 
   const handleSendWord = () => {
-    if (currentPlayer === user.id && inputValue.trim() !== "") {
+    console.log(currentPlayer == user.id);
+    if (currentPlayer === user.id) {
       console.log(inputValue);
       socket.emit("sendWord", { word: inputValue });
       setWords((prevWords) => [...prevWords, inputValue]);
       setInputValue("");
-      setTimer(settings.time || 5); // Reset the timer to settings.time or 5
-      setProgressWidth("100%"); // Reset progress bar
     }
   };
 
@@ -58,13 +57,13 @@ const Game = () => {
     socket.on("updateWords", (data) => {
       setWords(data.words);
       setCurrentPlayer(data.currentPlayer);
-    })}
-    );
+    });
+  });
 
   useEffect(() => {
     socket.on("redirect", (data) => {
       setTimeout(() => {
-        router.push("/app/game/" + roomCode + "/" +  data.url);
+        router.push("/app/game/" + roomCode + "/" + data.url);
       }, 3000);
     });
   }, []);
@@ -83,8 +82,8 @@ const Game = () => {
     <main>
       <section className="w-screen h-5 bg-[#95D5B2] fixed top-0 left-0">
         <div
-          className="h-full bg-[#1B4332] transition-all duration-1000 ease-linear"
-          style={{ width: progressWidth }}
+          className="h-full bg-[#1B4332]"
+          id="progress"
         ></div>
       </section>
       <section className="w-screen h-screen flex flex-col items-center justify-evenly">
