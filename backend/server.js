@@ -11,7 +11,31 @@ const io = new Server(3002, {
   },
 });
 
+require("dotenv").config();
+
+
+const OpenAI = require("openai");
+const openai = new OpenAI({apiKey: process.env.OPENAI_KEY});
+
+async function sendDataToGpt(data) {
+  const completion = await openai.chat.completions.create({
+    messages: [
+      {"role": "system", "content": "Gib ein JSON-Objekt zurück, das die Wörter und Spieler enthält. Jeder Spieler hat die Attribute id, name, words, points (eine Zahl zwischen 1 und 500), und place (Platzierung basierend auf der Punktzahl). Die Punkte basieren darauf, wie gut die Wörter des Spielers zum gesamten Satz passen, sowie auf Kreativität, Durchdachtheit, Grammatik und Humor. Verwende folgende JSON-Struktur und gib nur das JSON zurück, nichts weiter: {\"words\":[\"Wort1\",\"Wort2\",\"...\"],\"players\":[{\"id\":\"Spieler-ID\",\"name\":\"Spielername\",\"host\":true,\"words\":[\"Wort1\",\"Wort2\",\"...\"],\"points\":Punktzahl (1-500),\"place\":Platzierung}]}."},
+      {"role": "user", "content": JSON.stringify(data)},
+      ],
+    model: "gpt-4o-mini",
+    response_format: { "type": "json_object" },
+
+  });
+  console.log(completion.choices[0]);
+
+ return(completion.choices[0]);
+}
+
+
+
 const {v4} = require("uuid");
+const { send } = require("process");
 
 const games = [];
 
@@ -72,6 +96,7 @@ io.on("connection", (socket) => {
 
   // Handle sendWord event
   socket.on("sendWord", (data) => {
+   // console.log(data.word.length, data.maxWords);
     const game = games.find((game) => game.players.some((player) => player.id === socket.id));
     if (game) {
       game.words.push(data.word);
@@ -82,10 +107,29 @@ io.on("connection", (socket) => {
         game.currentPlayer = null;
         io.to(game.id).emit("updateWords", { words: game.words, currentPlayer: game.currentPlayer });
         io.to(game.id).emit("redirect", { url: "/voting" });
-
+      }
+      if (game.words.length == data.maxWords) {
+        game.currentPlayer = null;
+        io.to(game.id).emit("updateWords", { words: game.words, currentPlayer: game.currentPlayer });
+        io.to(game.id).emit("redirect", { url: "/voting" });
       }
     }
   });
+
+
+  // Handle getVotingData event
+  socket.on("getVotingData", () => {
+    const game = games.find((game) => game.players.some((player) => player.id === socket.id));
+    if (game) {
+     sendDataToGpt({ words: game.words, players: game.players }).then((data) => {
+      io.to(game.id).emit("votingData", { gpt: JSON.parse(data.message.content) });
+     })
+    }
+  });
+
+  
+
+
 
 
   //Handle updatePlayers event
@@ -96,7 +140,7 @@ io.on("connection", (socket) => {
       io.to(game.id).emit("updatePlayers", {players: game.players});
     }
   });
-  
+
 
   // Handle disconnection
   socket.on("disconnect", () => {

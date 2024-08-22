@@ -8,7 +8,7 @@ import { socket } from "@/app/variables";
 import { useRouter } from "next/navigation";
 
 const Game = () => {
-  const settings = useSettingsStore().settings;
+  const { settings, setSettings } = useSettingsStore();
   const { players, setPlayers } = usePlayersStore();
   const { currentPlayer, setCurrentPlayer } = useCurrentPlayerStore();
   const { user, setUser } = useUserStore();
@@ -19,23 +19,35 @@ const Game = () => {
   const roomCode = window.location.pathname.split("/")[3];
 
   const router = useRouter();
-
-
+  
+  console.log(user)
 
   useEffect(() => {
-    
-    setTimer(settings.time || 5); 
+
+    const currPlayer = document.getElementById(currentPlayer);
+    if (!currPlayer) return;
+    const playerIndicator = document.getElementById("playerIndicator");
+    const playerRect = currPlayer.getBoundingClientRect();
+    playerIndicator.style.left = `${playerRect.left + playerRect.width / 2}px`;
+    playerIndicator.style.top = `${playerRect.top + playerRect.height / 2}px`;
+    playerIndicator.style.width = `${playerRect.width + 30}px`;
+    playerIndicator.style.height = `${playerRect.height + 10}px`;  
+
+
+    setTimer(settings.time || 5);
     const indicator = document.getElementById("progress");
     indicator.style.removeProperty("animation");
     void indicator.offsetWidth;
-    indicator.style.animation = `progress ${settings.time || 5}s linear infinite`;
-
+    indicator.style.animation = `progress ${
+      settings.time || 5
+    }s linear infinite`;
 
     const interval = setInterval(() => {
-      setTimer((prev) => prev - 1)
+      setTimer((prev) => prev - 1);
     }, 1000);
+
     return () => clearInterval(interval);
-}, [currentPlayer]);
+  }, [currentPlayer]);
 
   useEffect(() => {
     if (timer === 0 && currentPlayer === user.id) {
@@ -47,7 +59,10 @@ const Game = () => {
     console.log(currentPlayer == user.id);
     if (currentPlayer === user.id) {
       console.log(inputValue);
-      socket.emit("sendWord", { word: inputValue });
+      socket.emit("sendWord", {
+        word: inputValue,
+        maxWords: settings.maxWords,
+      });
       setWords((prevWords) => [...prevWords, inputValue]);
       setInputValue("");
     }
@@ -79,14 +94,12 @@ const Game = () => {
   };
 
   useEffect(() => {
-  socket.on("disconnect", () => {
-    socket.emit("updatePlayers", { players: players.filter((player) => player.id !== user.id)
+    socket.on("disconnect", () => {
+      socket.emit("updatePlayers", {
+        players: players.filter((player) => player.id !== user.id),
+      });
     });
-  });
-}, []);
-
-  
-
+  }, []);
 
   useEffect(() => {
     socket.on("updatePlayers", (data) => {
@@ -97,10 +110,7 @@ const Game = () => {
   return (
     <main>
       <section className="w-screen h-5 bg-[#95D5B2] fixed top-0 left-0">
-        <div
-          className="h-full bg-[#1B4332]"
-          id="progress"
-        ></div>
+        <div className="h-full bg-[#1B4332]" id="progress"></div>
       </section>
       <section className="w-screen h-screen flex flex-col items-center justify-evenly">
         <section className="w-4/6 h-fit flex justify-center items-center bg-[#95D5B2] rounded-xl p-5">
@@ -118,16 +128,19 @@ const Game = () => {
           </div>
           <div className="flex justify-evenly items-center w-fit gap-10 mt-10 bg-[#95D5B2] p-10 rounded-xl">
             {players.map((player) => (
-              <section>
-               <div key={player.id} className="flex flex-col items-center">
-                <div className="w-24 h-24 bg-white rounded-full"></div>
-                <p className="text-2xl font-medium">{player.name}</p>
-              </div>
+              <div
             
-
-              </section>
-             
+                key={player.id}
+                className="flex flex-col items-center z-20 relative"
+              >
+                <div className="w-24 h-24 bg-white rounded-full"></div>
+                <p id={player.id} className="text-2xl font-medium">{player.name}</p>
+              </div>
             ))}
+            <div
+              id="playerIndicator"
+              className="bg-slate-300 absolute duration-500 bottom-0 left-0 -translate-x-1/2 -translate-y-1/2 rounded-xl z-10"
+            />
           </div>
         </section>
       </section>
