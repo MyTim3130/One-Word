@@ -78,6 +78,22 @@ const Game = () => {
     setInputValue(e.target.value);
   };
 
+  useEffect(() => {
+  socket.on("disconnect", () => {
+    socket.emit("updatePlayers", { players: players.filter((player) => player.id !== user.id)
+    });
+  });
+}, []);
+
+  
+
+
+  useEffect(() => {
+    socket.on("updatePlayers", (data) => {
+      setPlayers(data.players);
+    });
+  }, []);
+
   return (
     <main>
       <section className="w-screen h-5 bg-[#95D5B2] fixed top-0 left-0">
@@ -102,10 +118,15 @@ const Game = () => {
           </div>
           <div className="flex justify-evenly items-center w-fit gap-10 mt-10 bg-[#95D5B2] p-10 rounded-xl">
             {players.map((player) => (
-              <div key={player.id} className="flex flex-col items-center">
+              <section>
+               <div key={player.id} className="flex flex-col items-center">
                 <div className="w-24 h-24 bg-white rounded-full"></div>
                 <p className="text-2xl font-medium">{player.name}</p>
               </div>
+            
+
+              </section>
+             
             ))}
           </div>
         </section>

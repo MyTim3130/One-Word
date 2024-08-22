@@ -87,6 +87,17 @@ io.on("connection", (socket) => {
     }
   });
 
+
+  //Handle updatePlayers event
+  socket.on("updatePlayers", (data) => {
+    const game = games.find((game) => game.players.some((player) => player.id === socket.id));
+    if (game) {
+      game.players = data.players;
+      io.to(game.id).emit("updatePlayers", {players: game.players});
+    }
+  });
+  
+
   // Handle disconnection
   socket.on("disconnect", () => {
     console.log("A user disconnected");
