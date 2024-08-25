@@ -51,7 +51,7 @@ const Join = () => {
             type="text"
             placeholder="Code..."
             onChange={handleChange}
-            className="px-5 py-2 w-1/12 h-14 rounded-3xl text-xl bg-[#95D5B2] text-[#081C15] placeholder:text-[#081C15] focus:outline-none focus:scale-[1.01] transition-all text-center"
+            className="px-5 py-2 w-2/4 lg:w-2/12 h-14 rounded-3xl text-xl bg-[#95D5B2] text-[#081C15] placeholder:text-[#081C15] focus:outline-none focus:scale-[1.01] transition-all text-center"
           />
           <button className='text-xl px-10 py-2 bg-[#95D5B2] rounded-xl hover:scale-90 transition-all' onClick={handleSubmit}>Submit</button>
         </div>

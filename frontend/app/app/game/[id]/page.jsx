@@ -114,26 +114,26 @@ const Game = () => {
       </section>
       <section className="w-screen h-screen flex flex-col items-center justify-evenly">
         <section className="w-4/6 h-fit flex justify-center items-center bg-[#95D5B2] rounded-xl p-5">
-          <p className="text-4xl font-medium">{words.join(" ")}</p>
+          <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium">{words.join(" ")}</p>
         </section>
         <section className="flex flex-col justify-between items-center w-full h-36">
           <div className="flex justify-center items-center ">
             <input
               type="text"
-              className="bg-[#95D5B2] rounded-xl px-10 py-3 text-2xl focus:outline-none transition-all text-center"
+              className="bg-[#95D5B2] rounded-xl px-1 lg:px-10 py-3 text-2xl focus:outline-none transition-all text-center"
               value={inputValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
             />
           </div>
-          <div className="flex justify-evenly items-center w-fit gap-10 mt-10 bg-[#95D5B2] p-10 rounded-xl">
+          <div className="lg:flex justify-evenly items-center w-fit gap-10 mt-10 bg-[#95D5B2] p-10 rounded-xl grid grid-cols-2">
             {players.map((player) => (
               <div
             
                 key={player.id}
                 className="flex flex-col items-center z-20 relative"
               >
-                <div className="w-24 h-24 bg-white rounded-full"></div>
+                <div className="lg:w-24 lg:h-24 h-16 w-16 bg-white rounded-full"></div>
                 <p id={player.id} className="text-2xl font-medium">{player.name}</p>
               </div>
             ))}

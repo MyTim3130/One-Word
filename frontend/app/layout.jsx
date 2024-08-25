@@ -1,6 +1,5 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import AudioProvider from "./_providers/AudioProvider.js"; // Adjust the path as necessary
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,9 +12,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AudioProvider>
+      
           {children}
-        </AudioProvider>
+       
       </body>
     </html>
   );

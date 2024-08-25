@@ -74,21 +74,21 @@ useEffect(() => {
 
 
   return (
-    <main className="w-screen h-screen gap-20 flex p-10">
-      <div className="h-full w-1/4 bg-[#95D5B2] rounded-md flex flex-col gap-5 items-center pt-6 text-xl">
+    <main className="flex w-screen h-fit lg:h-screen gap-20 lg:flex-row p-10 flex-col items-center justify-center lg:justify-normal lg:items-stretch">
+      <div className="h-full w-3/4 lg:w-1/4 bg-[#95D5B2] rounded-md flex flex-col gap-5 items-center pt-6 text-xl">
         {players.map((player) => (
           <div
             key={player.id}
-            className="bg-[#ffffff9a] w-3/4 h-12 flex justify-center items-center rounded-md"
+            className="bg-[#ffffff9a] w-3/4 h-12 flex justify-center items-center rounded-md mb-5"
           >
             <div>{player.name}</div>
           </div>
         ))}
       </div>
-      <section className="w-full flex flex-col">
-        <section className="w-full h-full flex">
+      <section className="w-full flex flex-col gap-10">
+        <section className="w-full h-full flex flex-col md:flex-row gap-10">
           <section className="w-full">
-            <div className="h-5/6 w-5/6 bg-[#95D5B2] rounded-md p-5 flex flex-col justify-between">
+            <div className="h-fit w-full bg-[#95D5B2] rounded-md p-5 flex flex-col justify-between">
             <div>
 
            
@@ -129,7 +129,7 @@ useEffect(() => {
           
           </section>
 
-          <section className="w-full h-5/6 bg-[#95D5B2] rounded-md p-5">
+          <section className="w-full h-96 bg-[#95D5B2] rounded-md p-5">
             CANVAS
           </section>
         </section>
