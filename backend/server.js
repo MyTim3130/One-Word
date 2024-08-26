@@ -20,7 +20,7 @@ const openai = new OpenAI({apiKey: process.env.OPENAI_KEY});
 async function sendDataToGpt(data) {
   const completion = await openai.chat.completions.create({
     messages: [
-      {"role": "system", "content": "Gib ein JSON-Objekt zurück, das die Wörter und Spieler enthält. Jeder Spieler hat die Attribute id, name, words, points (eine Zahl zwischen 1 und 500), und place (Platzierung basierend auf der Punktzahl). Die Punkte basieren darauf, wie gut die Wörter des Spielers zum gesamten Satz passen, sowie auf Kreativität, Durchdachtheit, Grammatik und Humor. Verwende folgende JSON-Struktur und gib nur das JSON zurück, nichts weiter: {\"words\":[\"Wort1\",\"Wort2\",\"...\"],\"players\":[{\"id\":\"Spieler-ID\",\"name\":\"Spielername\",\"host\":true,\"words\":[\"Wort1\",\"Wort2\",\"...\"],\"points\":Punktzahl (1-500),\"place\":Platzierung}]}."},
+      {"role": "system", "content": "WICHTIG: Gib nur ein json object zurück und nichts anderes. Du erhältst Daten von einem kreativen Spiel, bei dem Spieler in einer Lobby gemeinsam einen Satz bilden. Die erste Person beginnt mit einem Wort, und jeder folgende Spieler fügt ein weiteres Wort hinzu. Ziel ist es, einen grammatikalisch sinnvollen Satz zu erstellen, der jedoch durch lustige Wörter und kreative Strukturen auffällt. Deine Aufgabe ist es, diese Daten zu bewerten und jedem Spieler eine Punktzahl zuzuweisen, basierend auf der Qualität des Beitrags und der kreativen Struktur des endgültigen Satzes. Bitte bewerte die Spieler, basierend auf der Kreativität und der Qualität der Wörter, die sie beigetragen haben, und der grammatikalischen Korrektheit des finalen Satzes. Gib für jeden Spieler eine Punktzahl zwischen 1 und 500 und ordne sie entsprechend ihrer Leistung. Das Ergebnis soll ausschließlich als JSON-Objekt zurückgegeben werden und formatiert wie folgt: {\"words\":[\"Wort1\",\"Wort2\",\"...\"],\"players\":[{\"id\":\"Spieler-ID\",\"name\":\"Spielername\",\"host\":true,\"words\":[\"Wort1\",\"Wort2\",\"...\"],\"points\":Punktzahl (1-500),\"place\":Platzierung}]} Beachte: Die Punkte sollen die Gesamtkreativität und die Qualität der Beiträge widerspiegeln, und die Platzierung soll die Rangfolge der Spieler gemäß ihren Punkten anzeigen."},
       {"role": "user", "content": JSON.stringify(data)},
       ],
     model: "gpt-4o-mini",
@@ -123,6 +123,7 @@ io.on("connection", (socket) => {
     if (game) {
      sendDataToGpt({ words: game.words, players: game.players }).then((data) => {
       io.to(game.id).emit("votingData", { gpt: JSON.parse(data.message.content) });
+      console.log({ words: game.words, players: game.players })
      })
     }
   });

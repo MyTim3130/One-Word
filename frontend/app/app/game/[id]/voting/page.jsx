@@ -79,7 +79,7 @@ useEffect(() => {
       {votingData === null ? (
         <div className='text-2xl'>Loading...</div>
       ) : (
-        <div className='flex w-fit justify-around p-20 gap-36 bg-[#95D5B2] rounded-xl'>
+        <div className='flex xl:flex-row flex-col w-fit justify-around p-20 gap-36 bg-[#95D5B2] rounded-xl'>
           {votingData.gpt.players.map((player) => (
             <section key={player.id} className='flex flex-col justify-between'>
               <div>
