@@ -11,13 +11,13 @@ app.get("/", (req, res) => {
 });
 const server = http.createServer(app);
 app.use(cors(
-  { origin: "https://oneword.timhausl.com",
+  { origin: "*",
   methods: ["GET", "POST "],
   credentials: true }
 ));
 const io = new Server(server, {
  cors: {
-    origin: "https://oneword.timhausl.com",
+    origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
   },
