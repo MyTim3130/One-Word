@@ -1,10 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from 'framer-motion';
 import useSettingsStore from "@/app/_store/settings.store";
 import usePlayersStore from "@/app/_store/players.store";
 import useCurrentPlayerStore from "@/app/_store/currentPlayer.store";
 import useUserStore from "@/app/_store/user.store";
-import { socket } from "@/app/variables";
+import { socket } from "@/app/socket/socket";
 import { useRouter } from "next/navigation";
 
 const Game = () => {
@@ -109,41 +110,142 @@ const Game = () => {
 
   return (
     <main>
-      <section className="w-screen h-5 bg-[#95D5B2] fixed top-0 left-0">
-        <div className="h-full bg-[#1B4332]" id="progress"></div>
+      <section className="w-screen h-2 bg-white/10 fixed top-0 left-0 z-50">
+        <motion.div 
+          className="h-full bg-gradient-to-r from-primary-500 to-secondary-gradient rounded-r-full shadow-glow" 
+          id="progress"
+          initial={{ width: "100%" }}
+        />
       </section>
-      <section className="w-screen h-screen flex flex-col items-center justify-evenly">
-        <section className="w-4/6 h-fit flex justify-center items-center bg-[#95D5B2] rounded-xl p-5">
-          <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium">{words.join(" ")}</p>
-        </section>
-        <section className="flex flex-col justify-between items-center w-full h-36">
-          <div className="flex justify-center items-center ">
-            <input
-              type="text"
-              className="bg-[#95D5B2] rounded-xl px-1 lg:px-10 py-3 text-2xl focus:outline-none transition-all text-center"
-              value={inputValue}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-            />
+      
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 py-8 pt-16">
+        {/* Story Display */}
+        <motion.section
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="w-full max-w-4xl mb-12"
+        >
+          <div className="glass-strong rounded-3xl p-8 md:p-12 shadow-glass-strong min-h-32">
+            <AnimatePresence mode="wait">
+              {words.length > 0 ? (
+                <motion.p
+                  key={words.join(" ")}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-white leading-relaxed text-center"
+                >
+                  {words.join(" ")}
+                </motion.p>
+              ) : (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium text-white/60 text-center"
+                >
+                  Waiting for the story to begin...
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
-          <div className="lg:flex justify-evenly items-center w-fit gap-10 mt-10 bg-[#95D5B2] p-10 rounded-xl grid grid-cols-2">
-            {players.map((player) => (
-              <div
+        </motion.section>
+
+        {/* Input Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="w-full max-w-md mb-12"
+        >
+          <div className="text-center mb-4">
+            <motion.div
+              key={timer}
+              initial={{ scale: 1.2, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="text-3xl font-bold text-white mb-2"
+            >
+              {timer}
+            </motion.div>
+            <p className="text-white/60 text-sm">seconds remaining</p>
+          </div>
+          
+          <motion.input
+            type="text"
+            className="input-glass w-full px-6 py-4 rounded-2xl text-xl font-medium text-center focus:outline-none transition-all duration-300"
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter your word..."
+            disabled={currentPlayer !== user.id}
+            whileFocus={{ scale: 1.02 }}
+          />
+          
+          {currentPlayer !== user.id && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-white/60 text-center mt-3 text-sm"
+            >
+              Waiting for your turn...
+            </motion.p>
+          )}
+        </motion.section>
+
+        {/* Players Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="w-full max-w-4xl"
+        >
+          <div className="glass-strong rounded-3xl p-8 shadow-glass-strong relative">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
+              {players.map((player, index) => (
+                <motion.div
+                  key={player.id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  className={`flex flex-col items-center relative z-20 transition-all duration-500 ${
+                    currentPlayer === player.id ? 'transform scale-110' : ''
+                  }`}
+                >
+                  <div className={`
+                    w-16 h-16 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-xl lg:text-2xl font-bold text-white transition-all duration-500
+                    ${currentPlayer === player.id 
+                      ? 'bg-primary-gradient shadow-glow pulse-glow' 
+                      : 'bg-gradient-to-br from-white/20 to-white/10'
+                    }
+                  `}>
+                    {player.name.charAt(0).toUpperCase()}
+                  </div>
+                  <p id={player.id} className="text-lg lg:text-xl font-medium text-white mt-2 text-center">
+                    {player.name}
+                  </p>
+                  
+                  {currentPlayer === player.id && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-primary-gradient rounded-full flex items-center justify-center shadow-glow"
+                    >
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 12l-4-4 1.41-1.41L10 9.17l2.59-2.58L14 8l-4 4z"/>
+                      </svg>
+                    </motion.div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
             
-                key={player.id}
-                className="flex flex-col items-center z-20 relative"
-              >
-                <div className="lg:w-24 lg:h-24 h-16 w-16 bg-white rounded-full"></div>
-                <p id={player.id} className="text-2xl font-medium">{player.name}</p>
-              </div>
-            ))}
             <div
               id="playerIndicator"
-              className="bg-slate-300 absolute duration-500 bottom-0 left-0 -translate-x-1/2 -translate-y-1/2 rounded-xl z-10"
+              className="absolute duration-500 bottom-0 left-0 -translate-x-1/2 -translate-y-1/2 rounded-2xl z-10 opacity-0"
             />
           </div>
-        </section>
-      </section>
+        </motion.section>
+      </div>
     </main>
   );
 };

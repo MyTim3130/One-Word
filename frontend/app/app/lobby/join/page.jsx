@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { socket } from "../../../variables";
+import { motion } from 'framer-motion';
+import { socket } from "../../../socket/socket";
 import { useRouter } from "next/navigation";
 import useUserStore from "@/app/_store/user.store";
 import usePlayersStore from "@/app/_store/players.store";
@@ -35,27 +36,66 @@ const Join = () => {
   };
 
   return (
-    <main className="w-screen h-[80vh] flex flex-col pt-20 gap-10 items-center justify-center">
-      <h1 className="text-3xl text-[#081C15]">Join</h1>
-      <div className="flex flex-col w-full">
-        <div className="w-full h-full flex justify-center">
-          <input
-            type="text"
-            placeholder="Name..."
-            onChange={handleNameChange}
-            className="px-5 py-2 w-2/6 h-14 rounded-3xl text-xl bg-[#95D5B2] text-[#081C15] placeholder:text-[#081C15] focus:outline-none focus:scale-[1.01] transition-all"
-          />
-        </div>
-        <div className="flex flex-col w-full items-center gap-10 mt-5">
-          <input
-            type="text"
-            placeholder="Code..."
-            onChange={handleChange}
-            className="px-5 py-2 w-2/4 lg:w-2/12 h-14 rounded-3xl text-xl bg-[#95D5B2] text-[#081C15] placeholder:text-[#081C15] focus:outline-none focus:scale-[1.01] transition-all text-center"
-          />
-          <button className='text-xl px-10 py-2 bg-[#95D5B2] rounded-xl hover:scale-90 transition-all' onClick={handleSubmit}>Submit</button>
-        </div>
-      </div>
+    <main className="min-h-screen flex flex-col items-center justify-center px-6">
+      <motion.div
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="glass-strong rounded-3xl p-8 md:p-12 w-full max-w-md shadow-glass-strong"
+      >
+        <motion.h1
+          className="text-3xl md:text-4xl font-bold text-white text-center mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          Join Room
+        </motion.h1>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="space-y-6"
+        >
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-2">
+              Your Name
+            </label>
+            <input
+              type="text"
+              placeholder="Enter your name..."
+              onChange={handleNameChange}
+              className="input-glass w-full px-6 py-4 rounded-2xl text-lg font-medium focus:outline-none transition-all duration-300"
+              value={playerName}
+            />
+          </div>
+
+          <div>
+            <label className="block text-white/80 text-sm font-medium mb-2">
+              Room Code
+            </label>
+            <input
+              type="text"
+              placeholder="Enter room code..."
+              onChange={handleChange}
+              className="input-glass w-full px-6 py-4 rounded-2xl text-lg font-medium text-center focus:outline-none transition-all duration-300 tracking-widest uppercase"
+              value={gameCode}
+            />
+          </div>
+
+          <motion.button
+            onClick={handleSubmit}
+            className="btn-primary w-full text-xl py-4 rounded-2xl font-semibold shadow-glass transition-all duration-300"
+            whileHover={{ scale: 1.02, y: -1 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            disabled={!playerName.trim() || !gameCode.trim()}
+          >
+            Join Room
+          </motion.button>
+        </motion.div>
+      </motion.div>
     </main>
   );
 };

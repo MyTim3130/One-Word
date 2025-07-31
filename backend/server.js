@@ -4,6 +4,9 @@ const express = require("express");
 const http = require("http");
 
 const app = express();
+app.get("/", (req, res) => {
+  res.send("Socket.io server is running");
+});
 const server = http.createServer(app);
 const io = new Server(3002, {
   cors: {
