@@ -8,12 +8,13 @@ app.get("/", (req, res) => {
   res.send("Socket.io server is running");
 });
 const server = http.createServer(app);
-const io = new Server(3002, {
+const io = new Server(server, {
   cors: {
     origin: "*",
-    allowedHeaders: ["Content-Type", "Access-Control-Allow-Origin"], 
-
-  },
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Access-Control-Allow-Origin"],
+    credentials: true
+  }
 });
 
 require("dotenv").config();
@@ -164,4 +165,6 @@ io.on("connection", (socket) => {
 
 // Start the server
 
-console.log("Server listening on port 3002");
+server.listen(3002, () => {
+  console.log("Server listening on port 3002");
+});
