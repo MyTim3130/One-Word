@@ -10,9 +10,17 @@ app.get("/", (req, res) => {
   res.send("Socket.io server is running");
 });
 const server = http.createServer(app);
-app.use(cors());
+app.use(cors(
+  { origin: "https://oneword.timhausl.com",
+  methods: ["GET", "POST "],
+  credentials: true }
+));
 const io = new Server(server, {
- 
+ cors: {
+    origin: "https://oneword.timhausl.com",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
 });
 
 require("dotenv").config();
