@@ -36,7 +36,7 @@ const LobbyName = () => {
         className="glass-strong rounded-3xl p-8 md:p-12 w-full max-w-md shadow-glass-strong"
       >
         <motion.h1
-          className="text-3xl md:text-4xl font-bold text-white text-center mb-8"
+          className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] text-center mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -51,7 +51,7 @@ const LobbyName = () => {
           className="space-y-6"
         >
           <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">
+            <label className="block text-[var(--text-secondary)] text-sm font-medium mb-2">
               Your Name
             </label>
             <input

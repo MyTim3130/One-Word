@@ -26,7 +26,7 @@ const GameModes = () => {
           className={`
             relative cursor-pointer rounded-2xl p-6 text-center transition-all duration-300
             ${selectedMode === mode.id 
-              ? 'bg-primary-gradient shadow-glow' 
+              ? 'bg-[var(--gradient-accent)] shadow-[var(--shadow-glow)]' 
               : 'glass hover:glass-strong'
             }
           `}
@@ -35,15 +35,15 @@ const GameModes = () => {
           whileTap={{ scale: 0.98 }}
         >
           <div className="text-3xl mb-3">{mode.icon}</div>
-          <p className="text-lg font-semibold text-white">{mode.name}</p>
+          <p className="text-lg font-semibold text-[var(--text-primary)]">{mode.name}</p>
           
           {selectedMode === mode.id && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center"
+              className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--gradient-accent)] rounded-full flex items-center justify-center"
             >
-              <svg className="w-4 h-4 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 text-[var(--text-primary)]" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
             </motion.div>

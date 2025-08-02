@@ -7,6 +7,7 @@ import { socket } from '@/app/socket/socket';
 import { Star } from 'lucide-react';
 
 export default function Voting() {
+  
   const { user } = useUserStore();
   const router = useRouter();
   const { id: gameId } = useParams();
@@ -22,9 +23,11 @@ export default function Voting() {
   useEffect(() => {
     socket.emit('getVotingData');
     socket.on('ratingData', data => {
+      console.log('ratingData', data);
       setToRate(data.players.filter(p => p.id !== user.id));
       setSentence(data.words || []);
       setStage('rating');
+
     });
     socket.on('votingData', data => {
       setResults(data);
@@ -108,26 +111,26 @@ export default function Voting() {
         <motion.h2
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold text-white mb-6"
+          className="text-3xl font-bold text-[var(--text-primary)] mb-6"
         >
           Rate {curr.name}
         </motion.h2>
 
         {/* full sentence with highlights */}
         <div className="glass-strong rounded-3xl p-6 shadow-glass-strong mb-8">
-          <p className="text-lg text-white text-center flex flex-wrap gap-2 justify-center">
+          <p className="text-lg text-[var(--text-primary)] text-center flex flex-wrap gap-2 justify-center">
             {sentence.map((word, idx) => {
-              const isCurr = curr.words.includes(word);
+              const isCurr = curr.words.includes(word.word);
               return (
                 <span
                   key={idx}
                   className={
                     isCurr
-                      ? 'bg-primary-gradient text-white px-3 py-1 rounded-2xl shadow-glow'
-                      : 'text-white/60'
+                      ? 'bg-[var(--gradient-accent)] text-[var(--text-primary)] px-3 py-1 rounded-2xl shadow-[var(--shadow-glow)]'
+                      : 'text-[var(--text-muted)]'
                   }
                 >
-                  {word}
+                  {word.word}
                 </span>
               );
             })}
@@ -141,7 +144,7 @@ export default function Voting() {
 
         <button
           onClick={handleNext}
-          className="mt-8 px-8 py-3 rounded-2xl bg-primary-gradient text-white font-semibold shadow-glow"
+          className="mt-8 px-8 py-3 rounded-2xl bg-[var(--gradient-accent)] text-[var(--text-primary)] font-semibold shadow-[var(--shadow-glow)]"
         >
           {rateIdx + 1 < toRate.length ? 'Next' : 'Submit'}
         </button>
@@ -155,7 +158,7 @@ export default function Voting() {
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-4xl md:text-5xl font-black text-white mb-12 text-center"
+        className="text-4xl md:text-5xl font-black text-[var(--text-primary)] mb-12 text-center"
       >
         🏆 Final Leaderboard
       </motion.h1>
@@ -171,21 +174,21 @@ export default function Voting() {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center text-white font-bold">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center text-[var(--text-primary)] font-bold">
                   {p.name.charAt(0).toUpperCase()}
                 </div>
-                <h3 className="text-xl font-bold text-white">{p.name}</h3>
+                <h3 className="text-xl font-bold text-[var(--text-primary)]">{p.name}</h3>
               </div>
-              <div className="text-3xl font-black text-white">{p.points} pt</div>
+              <div className="text-3xl font-black text-[var(--text-primary)]">{p.points} pt</div>
             </div>
-            <div className="text-white/60 mb-4">#{p.place}</div>
+            <div className="text-[var(--text-muted)] mb-4">#{p.place}</div>
             <div className="space-y-1">
-              <div className="text-white/80 font-medium">Your words:</div>
+              <div className="text-[var(--text-secondary)] font-medium">Your words:</div>
               <div className="flex flex-wrap gap-2">
                 {p.words.map((w,j) => (
                   <span
                     key={j}
-                    className="glass rounded-full px-3 py-1 text-sm text-white"
+                    className="glass rounded-full px-3 py-1 text-sm text-[var(--text-primary)]"
                   >
                     {w}
                   </span>
@@ -200,19 +203,19 @@ export default function Voting() {
       <div className="flex justify-center gap-4 mt-8">
         <button
           onClick={() => router.push('/app')}
-          className="px-6 py-2 rounded-2xl bg-white/10 text-white font-medium hover:bg-white/20 transition"
+          className="px-6 py-2 rounded-2xl bg-[var(--bg-glass)] text-[var(--text-primary)] font-medium hover:bg-[var(--bg-glass-strong)] transition"
         >
           Home
         </button>
         <button
           onClick={() => socket.emit('resetGame')}
-          className="px-6 py-2 rounded-2xl bg-primary-gradient text-white font-medium hover:opacity-90 transition"
+          className="px-6 py-2 rounded-2xl bg-[var(--gradient-primary)] text-[var(--text-primary)] font-medium hover:opacity-90 transition"
         >
           Play Again
         </button>
         <button
           onClick={handleDownload}
-          className="px-6 py-2 rounded-2xl bg-white/10 text-white font-medium hover:bg-white/20 transition"
+          className="px-6 py-2 rounded-2xl bg-[var(--bg-glass)] text-[var(--text-primary)] font-medium hover:bg-[var(--bg-glass-strong)] transition"
         >
           Download Results
         </button>

@@ -100,9 +100,9 @@ const Lobby = () => {
                         {player.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <div className="text-white font-medium">{player.name}</div>
+                    <div className="text-[var(--text-primary)] font-medium">{player.name}</div>
                     {player.host && (
-                      <div className="text-xs text-white/60 mt-1">Host</div>
+                      <div className="text-xs text-[var(--text-muted)] mt-1">Host</div>
                     )}
                   </motion.div>
                 ))}
@@ -120,12 +120,12 @@ const Lobby = () => {
                 transition={{ duration: 0.6, delay: 0.3 }}
                 className="flex-1 glass-strong rounded-3xl p-8 shadow-glass-strong"
               >
-                <h2 className="text-3xl font-bold text-white mb-8">Settings</h2>
+                <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-8">Settings</h2>
                 
                 <div className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="time" className="block text-white/80 text-lg font-medium mb-3">
+                      <label htmlFor="time" className="block text-[var(--text-secondary)] text-lg font-medium mb-3">
                         Time per Turn
                       </label>
                       <input
@@ -140,7 +140,7 @@ const Lobby = () => {
                     </div>
                     
                     <div>
-                      <label htmlFor="maxWords" className="block text-white/80 text-lg font-medium mb-3">
+                      <label htmlFor="maxWords" className="block text-[var(--text-secondary)] text-lg font-medium mb-3">
                         Max Words
                       </label>
                       <input
@@ -156,7 +156,7 @@ const Lobby = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-2xl font-bold text-white mb-6">Game Modes</h3>
+                    <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-6">Game Modes</h3>
                     <GameModes />
                   </div>
                 </div>
@@ -187,8 +187,8 @@ const Lobby = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
                   </div>
-                  <p className="text-white/60 text-lg font-medium">Drawing Canvas</p>
-                  <p className="text-white/40 text-sm mt-2">Coming Soon</p>
+                  <p className="text-[var(--text-muted)] text-lg font-medium">Drawing Canvas</p>
+                  <p className="text-[var(--text-muted)] text-sm mt-2">Coming Soon</p>
                 </div>
               </motion.div>
             </div>
@@ -200,8 +200,8 @@ const Lobby = () => {
               transition={{ duration: 0.6, delay: 0.5 }}
               className="glass-strong rounded-3xl p-6 shadow-glass-strong text-center"
             >
-              <p className="text-white/60 text-sm font-medium mb-2">Room Code</p>
-              <p className="text-4xl md:text-5xl font-black text-white tracking-widest">
+              <p className="text-[var(--text-muted)] text-sm font-medium mb-2">Room Code</p>
+              <p className="text-4xl md:text-5xl font-black text-[var(--text-primary)] tracking-widest">
                 {lobbyCode}
               </p>
             </motion.div>
