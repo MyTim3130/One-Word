@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, Clock, Users } from 'lucide-react';
+import { AlertTriangle } from 'react-feather';
+
 
 const VotingModal = ({ 
   isOpen, 
