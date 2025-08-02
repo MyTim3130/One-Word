@@ -1,227 +1,222 @@
-'use client'
+'use client';
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import usePlayersStore from '@/app/_store/players.store'
-import useUserStore from '@/app/_store/user.store'
-import { socket } from '@/app/socket/socket'
+import { motion } from 'framer-motion';
+import { useRouter, useParams } from 'next/navigation';
+import useUserStore from '@/app/_store/user.store';
+import { socket } from '@/app/socket/socket';
+import { Star } from 'lucide-react';
 
-const gptObject = {
-  "gpt": {
-      "words": [
-          "Viele",
-          "Egypter",
-          "inhalieren",
-          "vapes",
-          "weswegen",
-          "ihre",
-          "Mächte",
-          "schwinden."
-      ],
-      "players": [
-          {
-              "id": "FQCvSbP7FOI41U0GAAAv",
-              "name": "Tim",
-              "host": true,
-              "words": [
-                  "Viele",
-                  "vapes",
-                  "Mächte"
-              ],
-              "points": 350,
-              "place": 1
-          },
-          {
-              "id": "CALqV-Fs5g_VAo1oAAAz",
-              "name": "Timo",
-              "host": false,
-              "words": [
-                  "Egypter",
-                  "weswegen",
-                  "schwinden."
-              ],
-              "points": 300,
-              "place": 2
-          },
-          {
-              "id": "hTBraO74JfRCNPMuAAA5",
-              "name": "Alex",
-              "host": false,
-              "words": [
-                  "inhalieren",
-                  "ihre"
-              ],
-              "points": 150,
-              "place": 3
-          }
-      ]
-  }
-}
+export default function Voting() {
+  const { user } = useUserStore();
+  const router = useRouter();
+  const { id: gameId } = useParams();
 
-const Voting = () => {
-  const { players, setPlayers } = usePlayersStore()
-  const { user, setUser } = useUserStore()
-  const [votingData, setVotingData] = useState(null)
+  const [stage, setStage]         = useState('loading');
+  const [toRate, setToRate]       = useState([]);    // players to rate
+  const [rateIdx, setRateIdx]     = useState(0);
+  const [myRatings, setMyRatings] = useState({});    // rateeId → score
+  const [sentence, setSentence]   = useState([]);    // full sentence
+  const [results, setResults]     = useState(null);  // final leaderboard
 
+  // 1) fetch contributions & listen for final votingData
   useEffect(() => {
-    socket.emit("getVotingData",)
+    socket.emit('getVotingData');
+    socket.on('ratingData', data => {
+      setToRate(data.players.filter(p => p.id !== user.id));
+      setSentence(data.words || []);
+      setStage('rating');
+    });
+    socket.on('votingData', data => {
+      setResults(data);
+      setStage('results');
+    });
+    return () => {
+      socket.off('ratingData');
+      socket.off('votingData');
+    };
+  }, [user.id]);
 
-    socket.on("votingData", (data) => {
-      console.log(data)
-      setVotingData(data)
-    })
-  }, [])
+  // 2) listen for server redirect (used by resetGame)
+  useEffect(() => {
+    socket.on('redirect', ({ url }) => {
+      router.push(url);
+    });
+    return () => {
+      socket.off('redirect');
+    };
+  }, [router]);
 
-  const getPodiumPosition = (place) => {
-    switch (place) {
-      case 1: return { height: 'h-32', color: 'from-yellow-400 to-yellow-600', icon: '🥇' };
-      case 2: return { height: 'h-24', color: 'from-gray-300 to-gray-500', icon: '🥈' };
-      case 3: return { height: 'h-16', color: 'from-amber-600 to-amber-800', icon: '🥉' };
-      default: return { height: 'h-12', color: 'from-white/20 to-white/10', icon: '🏅' };
+  // star‐rating handler
+  const handleRate = score => {
+    const ratee = toRate[rateIdx].id;
+    setMyRatings(prev => ({ ...prev, [ratee]: score }));
+  };
+
+  // next or submit
+  const handleNext = () => {
+    if (rateIdx + 1 < toRate.length) {
+      setRateIdx(i => i + 1);
+    } else {
+      socket.emit('submitRatings', { ratings: myRatings });
+      setStage('loading');
     }
   };
 
+  // Download JSON
+  const handleDownload = () => {
+    if (!results) return;
+    const payload = {
+      sentence: results.words,
+      players: results.players
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `game_${gameId}_results.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
+  // Simple star row
+  const StarRow = ({ value, onChange }) => (
+    <div className="flex space-x-1 justify-center">
+      {[1,2,3,4,5].map(n => (
+        <Star
+          key={n}
+          className={`w-8 h-8 cursor-pointer ${n <= value ? 'text-yellow-400' : 'text-white/40'}`}
+          onClick={() => onChange(n)}
+        />
+      ))}
+    </div>
+  );
+
+  // — Loading —
+  if (stage === 'loading') {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white" />
+      </main>
+    );
+  }
+
+  // — Rating —
+  if (stage === 'rating') {
+    const curr = toRate[rateIdx];
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+        <motion.h2
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-3xl font-bold text-white mb-6"
+        >
+          Rate {curr.name}
+        </motion.h2>
+
+        {/* full sentence with highlights */}
+        <div className="glass-strong rounded-3xl p-6 shadow-glass-strong mb-8">
+          <p className="text-lg text-white text-center flex flex-wrap gap-2 justify-center">
+            {sentence.map((word, idx) => {
+              const isCurr = curr.words.includes(word);
+              return (
+                <span
+                  key={idx}
+                  className={
+                    isCurr
+                      ? 'bg-primary-gradient text-white px-3 py-1 rounded-2xl shadow-glow'
+                      : 'text-white/60'
+                  }
+                >
+                  {word}
+                </span>
+              );
+            })}
+          </p>
+        </div>
+
+        <StarRow
+          value={myRatings[curr.id] || 0}
+          onChange={handleRate}
+        />
+
+        <button
+          onClick={handleNext}
+          className="mt-8 px-8 py-3 rounded-2xl bg-primary-gradient text-white font-semibold shadow-glow"
+        >
+          {rateIdx + 1 < toRate.length ? 'Next' : 'Submit'}
+        </button>
+      </main>
+    );
+  }
+
+  // — Final Results —
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-12">
+    <main className="min-h-screen px-6 py-12">
       <motion.h1
-        initial={{ opacity: 0, y: -30 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
         className="text-4xl md:text-5xl font-black text-white mb-12 text-center"
       >
-        🏆 Final Results
+        🏆 Final Leaderboard
       </motion.h1>
 
-      <AnimatePresence>
-        {votingData === null ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {results.players.map((p,i) => (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="glass-strong rounded-3xl p-12 shadow-glass-strong"
+            key={p.id}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.1 }}
+            className="glass-strong rounded-3xl p-6 shadow-glass-strong"
           >
-            <div className="flex items-center justify-center space-x-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-              <div className="text-2xl text-white font-medium">Loading results...</div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center text-white font-bold">
+                  {p.name.charAt(0).toUpperCase()}
+                </div>
+                <h3 className="text-xl font-bold text-white">{p.name}</h3>
+              </div>
+              <div className="text-3xl font-black text-white">{p.points} pt</div>
+            </div>
+            <div className="text-white/60 mb-4">#{p.place}</div>
+            <div className="space-y-1">
+              <div className="text-white/80 font-medium">Your words:</div>
+              <div className="flex flex-wrap gap-2">
+                {p.words.map((w,j) => (
+                  <span
+                    key={j}
+                    className="glass rounded-full px-3 py-1 text-sm text-white"
+                  >
+                    {w}
+                  </span>
+                ))}
+              </div>
             </div>
           </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="w-full max-w-6xl"
-          >
-            {/* Podium View for Top 3 */}
-            <div className="flex justify-center items-end mb-12 space-x-8">
-              {votingData.gpt.players
-                .filter(player => player.place <= 3)
-                .sort((a, b) => a.place - b.place)
-                .map((player, index) => {
-                  const podium = getPodiumPosition(player.place);
-                  return (
-                    <motion.div
-                      key={player.id}
-                      initial={{ opacity: 0, y: 100 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.2 }}
-                      className="flex flex-col items-center"
-                    >
-                      <div className="glass-strong rounded-2xl p-6 mb-4 text-center shadow-glass-strong">
-                        <div className="text-4xl mb-2">{podium.icon}</div>
-                        <h3 className="text-xl font-bold text-white mb-2">{player.name}</h3>
-                        <div className="text-3xl font-black text-white mb-2">{player.points}</div>
-                        <div className="text-white/60 text-sm">points</div>
-                      </div>
-                      <div className={`w-24 ${podium.height} bg-gradient-to-t ${podium.color} rounded-t-xl shadow-glass`} />
-                    </motion.div>
-                  );
-                })}
-            </div>
+        ))}
+      </div>
 
-            {/* Detailed Results */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {votingData.gpt.players.map((player, index) => (
-                <motion.div
-                  key={player.id}
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  className={`
-                    glass-strong rounded-3xl p-6 shadow-glass-strong relative overflow-hidden
-                    ${player.place === 1 ? 'ring-2 ring-yellow-400/50' : ''}
-                  `}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className={`
-                        w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white
-                        ${player.place <= 3 
-                          ? 'bg-primary-gradient shadow-glow' 
-                          : 'bg-gradient-to-br from-white/20 to-white/10'
-                        }
-                      `}>
-                        {player.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-white">{player.name}</h3>
-                        <div className="text-white/60 text-sm">
-                          #{player.place} • {player.host ? 'Host' : 'Player'}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-black text-white">{player.points}</div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-white/80 font-medium mb-3">Contributed Words:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {player.words.map((word, wordIndex) => (
-                        <motion.span
-                          key={wordIndex}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, delay: wordIndex * 0.1 }}
-                          className="glass rounded-full px-3 py-1 text-sm text-white font-medium"
-                        >
-                          {word}
-                        </motion.span>
-                      ))}
-                    </div>
-                  </div>
-                  {player.place === 1 && (
-                    <div className="absolute top-4 right-4">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="text-2xl"
-                      >
-                        ⭐
-                      </motion.div>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Story Summary */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-              className="mt-12 glass-strong rounded-3xl p-8 shadow-glass-strong"
-            >
-              <h2 className="text-2xl font-bold text-white mb-6 text-center">📖 Your Story</h2>
-              <p className="text-lg text-white leading-relaxed text-center">
-                {votingData.gpt.words.join(" ")}
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* action buttons */}
+      <div className="flex justify-center gap-4 mt-8">
+        <button
+          onClick={() => router.push('/app')}
+          className="px-6 py-2 rounded-2xl bg-white/10 text-white font-medium hover:bg-white/20 transition"
+        >
+          Home
+        </button>
+        <button
+          onClick={() => socket.emit('resetGame')}
+          className="px-6 py-2 rounded-2xl bg-primary-gradient text-white font-medium hover:opacity-90 transition"
+        >
+          Play Again
+        </button>
+        <button
+          onClick={handleDownload}
+          className="px-6 py-2 rounded-2xl bg-white/10 text-white font-medium hover:bg-white/20 transition"
+        >
+          Download Results
+        </button>
+      </div>
     </main>
   );
-};
-
-export default Voting;
+}
